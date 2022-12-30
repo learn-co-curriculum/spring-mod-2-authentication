@@ -601,7 +601,7 @@ the `/status` endpoint is being blocked since we aren't authenticated:
 It looks like it worked!
 
 Let's add our basic authentication back in the "Authorization" tab and ensure
-we can hit the status endpoint again.
+we can hit the status endpoint.
 
 ![postman-authenticated](https://curriculum-content.s3.amazonaws.com/spring-mod-2/authentication/postman-authenticated-status.png)
 
