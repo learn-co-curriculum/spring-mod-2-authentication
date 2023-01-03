@@ -43,7 +43,7 @@ We'll create our own `UserDetailsService` and `PasswordEncoder` beans to add our
 own user!
 
 Open up the `SecurityConfiguration` class we created in the
-`spring-security-demo` project we created in the last lesson. This is where we
+`spring-security-demo` project that we used in the last lesson. This is where we
 will customize our application's authentication. Go ahead and add the following
 code:
 
@@ -216,7 +216,7 @@ dependency:
 ```
 
 Once the dependencies have been added to the `pom.xml`, click the little
-Maven icon in the upper-right hand corner of to reload the changes:
+Maven icon in the upper-right hand corner to reload the changes:
 
 ![load-maven-changes](https://curriculum-content.s3.amazonaws.com/spring-mod-2/authentication/load-maven-changes.png)
 
@@ -332,7 +332,7 @@ public interface UserRepository extends CrudRepository<User, Integer> {
 }
 ```
 
-We'll also add the following to the `application.properties` file so we can
+We'll also add the following to the `application.properties` file, so we can
 connect to our `security_demo` database:
 
 ```properties
