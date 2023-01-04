@@ -1,4 +1,4 @@
-# Authentication
+# Code Along: Authentication
 
 ## Learning Goals
 
