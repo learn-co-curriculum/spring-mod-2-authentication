@@ -465,7 +465,7 @@ Let's break down this code a little bit more:
     expired, and enabled. For our purposes, we'll be leaving these set to true
     so we won't have to worry about expired or locked credentials.
 
-A question we might still have is "Why does the password need to be encoded
+A question we might still have is "why does the password need to be encoded
 here?" Since Spring requires the password to be protected and secured, and we
 are using the `BCryptPasswordEncoder` in the `SecurityConfiguration` class, we
 must be consistent in how we are returning the password. Notice in our database,
