@@ -98,11 +98,13 @@ Let's break down this code:
 - Next we create a test user using the `User` class that is part of the
   `org.springframework.security.core.userdetails` package. To create a user, we
   need to provide that user a username and a password.
-  - Note that in Spring 5, we are required to encode the password. To do so, we
+  - Note that in Spring 5, we are required to secure the password. To do so, we
     will have the `passwordEncoder()` method return a new `PasswordEncoder`
     instance. `BCryptPasswordEncoder` is the recommended password encoder to
-    use, so we'll return an instance of that implementation.
-- Even though we have not yet covered authorization yet, we do have to give our
+    use, so we'll return an instance of that implementation. We will address
+    password handling and security in a separate lesson later on to better
+    explain this.
+- Even though we have not yet covered authorization, we do have to give our
   user a default "authority". We'll explain what that means in a later lesson.
 - Finally, we'll add our new `user` to the `userDetailsService` and then return
   the `userDetailService`.
@@ -212,8 +214,8 @@ Maven icon in the upper-right hand corner to reload the changes:
 
 ![load-maven-changes](https://curriculum-content.s3.amazonaws.com/spring-mod-2/authentication/load-maven-changes.png)
 
-Now let's create our a database that we can connect to in order to access user
-data! Open up pgAdmin4 and create a new database. Let's call it "security_demo".
+Now let's create a database that we can connect to in order to access user data!
+Open up pgAdmin4 and create a new database. Let's call it "security_demo".
 
 ![create-security-demo-db](https://curriculum-content.s3.amazonaws.com/spring-mod-2/authentication/create-sercurity-demo-db.png)
 
@@ -463,7 +465,23 @@ Let's break down this code a little bit more:
     expired, and enabled. For our purposes, we'll be leaving these set to true
     so we won't have to worry about expired or locked credentials.
 
-We'll return now to the `UserService` class and finish overriding the
+A question we might still have is "Why does the password need to be encoded
+here?" Since Spring requires the password to be protected and secured, and we
+are using the `BCryptPasswordEncoder` in the `SecurityConfiguration` class, we
+must be consistent in how we are returning the password. Notice in our database,
+the password is currently being stored as plain text. This is obviously bad, but
+we will cover password hashing in another lesson later on. In the meantime, if
+we were to just return `user.getPassword()` in the `UserWrapper` class, we might
+run into a warning like this:
+
+`WARN 23827 --- [nio-8080-exec-2] o.s.s.c.bcrypt.BCryptPasswordEncoder     : Encoded password does not look like BCrypt`
+
+To have the `UserDetailsService` return an "encoded" password to the
+authentication provider and authentication manager, we need to use the
+`BCryptPasswordEncoder` here in the `UserWrapper` class like so:
+`return new BCryptPasswordEncoder().encode(user.getPassword());`
+
+We'll now go back to the `UserService` class and finish overriding the
 `loadUserByUsername()` method:
 
 ```java
@@ -520,7 +538,8 @@ endpoint in our `DemoController` class:
 As we can imagine, the status of our application shouldn't be something that
 all users can access. Sure enough, based on our current configuration, this
 endpoint will be protected just like our `/hello` endpoint. Go ahead and restart
-the application to validate this.
+the application to validate this in Postman by making a new GET request to
+<http://localhost:8080/status>.
 
 Our issue now is that we don't actually want the `/hello` endpoint to be
 protected anymore. That's something we did for testing, but in reality we
@@ -555,7 +574,9 @@ So what is this code doing?
   forces the request to be authenticated.
 - The `anyRequest()` method is generic to say we want all requests whereas the
   `antMatchers()` method takes in a specific pattern that the request must
-  match. `antMatchers()` can match:
+  match. The name `antMatchers()` may look like a typo, but really it has been
+  borrowed from the name Apache Ant to look for Ant-style path patterns.
+  `antMatchers()` can match:
   - A specific URL path.
   - A specific HTTP method (GET, POST, etc.).
   - A specific URL path and a specific HTTP method.
