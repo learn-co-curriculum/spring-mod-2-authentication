@@ -8,9 +8,9 @@
 
 ## Introduction
 
-In the last lesson, we saw how we can use authentication to access our API
-when using Spring Security at its default. Remember, authentication is the
-process of validating that a user is who they claim to be.
+Before, we saw how we can use authentication to access our API when using Spring
+Security at its default. Remember, authentication is the process of validating
+that a user is who they claim to be.
 
 But what if we want to authenticate our own users? How can we do that in Spring?
 
@@ -101,9 +101,9 @@ Let's break down this code:
   - Note that in Spring 5, we are required to secure the password. To do so, we
     will have the `passwordEncoder()` method return a new `PasswordEncoder`
     instance. `BCryptPasswordEncoder` is the recommended password encoder to
-    use, so we'll return an instance of that implementation. We will address
-    password handling and security in a separate lesson later on to better
-    explain this.
+    use, so we'll return an instance of that implementation. This ensures that
+    our user has a hashed password using the blowfish algorithm that we mentioned
+    in the last lesson.
 - Even though we have not yet covered authorization, we do have to give our
   user a default "authority". We'll explain what that means in a later lesson.
 - Finally, we'll add our new `user` to the `userDetailsService` and then return
@@ -214,25 +214,11 @@ Maven icon in the upper-right hand corner to reload the changes:
 
 ![load-maven-changes](https://curriculum-content.s3.amazonaws.com/spring-mod-2/authentication/load-maven-changes.png)
 
-Now let's create a database that we can connect to in order to access user data!
-Open up pgAdmin4 and create a new database. Let's call it "security_demo".
-
-![create-security-demo-db](https://curriculum-content.s3.amazonaws.com/spring-mod-2/authentication/create-sercurity-demo-db.png)
-
-Once the database has been created, open up the Query Tool and copy in the
-following to create the `users` table and a user with the same credentials we
-saw previously:
+Let's reuse the `security_demo` database we created in the last lesson! Let's
+insert a user into the table with the same credentials we saw previously:
 
 ```postgresql
-DROP TABLE IF EXISTS users;
-
-CREATE TABLE users (
-  id INTEGER PRIMARY KEY,
-  username TEXT NOT NULL,
-  password TEXT NOT NULL
-);
-
-INSERT INTO users(id, username, password) VALUES(1, 'mary', 'test');
+INSERT INTO users(id, username, password) VALUES(3, 'mary', crypt('test', gen_salt('bf')));
 ```
 
 Execute the query and then run a `SELECT * FROM users;` query to ensure the
@@ -398,7 +384,6 @@ package com.example.springsecuritydemo.entity;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.Collection;
 import java.util.List;
@@ -418,8 +403,7 @@ public class UserWrapper implements UserDetails {
 
   @Override
   public String getPassword() {
-    // We'll need to encode the user's password before we return it
-    return new BCryptPasswordEncoder().encode(user.getPassword());
+    return user.getPassword();
   }
 
   @Override
@@ -455,8 +439,8 @@ Let's break down this code a little bit more:
   `UserWrapper` constructor.
 - Override the `getUsername()` method by returning the user's username:
   `return user.getUsername();`
-- Override the `getPassword()` method by returning the encoded user's password:
-  `return new BCryptPasswordEncoder().encode(user.getPassword());`
+- Override the `getPassword()` method by returning the user's password:
+  `return `
 - Override the `getAuthorities()` method by returning a list with an authority
   of "read". We'll elaborate more on this in the next lesson.
 - Have the `isAccountNonExpired()`, `isAccountNonLocked()`,
@@ -464,22 +448,6 @@ Let's break down this code a little bit more:
   - These methods have to do with looking to see if the user is locked out,
     expired, and enabled. For our purposes, we'll be leaving these set to true
     so we won't have to worry about expired or locked credentials.
-
-A question we might still have is "why does the password need to be encoded
-here?" Since Spring requires the password to be protected and secured, and we
-are using the `BCryptPasswordEncoder` in the `SecurityConfiguration` class, we
-must be consistent in how we are returning the password. Notice in our database,
-the password is currently being stored as plain text. This is obviously bad, but
-we will cover password hashing in another lesson later on. In the meantime, if
-we were to just return `user.getPassword()` in the `UserWrapper` class, we might
-run into a warning like this:
-
-`WARN 23827 --- [nio-8080-exec-2] o.s.s.c.bcrypt.BCryptPasswordEncoder     : Encoded password does not look like BCrypt`
-
-To have the `UserDetailsService` return an "encoded" password to the
-authentication provider and authentication manager, we need to use the
-`BCryptPasswordEncoder` here in the `UserWrapper` class like so:
-`return new BCryptPasswordEncoder().encode(user.getPassword());`
 
 We'll now go back to the `UserService` class and finish overriding the
 `loadUserByUsername()` method:
@@ -751,7 +719,6 @@ package com.example.springsecuritydemo.entity;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.Collection;
 import java.util.List;
@@ -771,8 +738,7 @@ public class UserWrapper implements UserDetails {
 
     @Override
     public String getPassword() {
-        // We'll need to encode the user's password before we return it
-        return new BCryptPasswordEncoder().encode(user.getPassword());
+        return user.getPassword();
     }
 
     @Override
