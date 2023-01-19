@@ -440,7 +440,7 @@ Let's break down this code a little bit more:
 - Override the `getUsername()` method by returning the user's username:
   `return user.getUsername();`
 - Override the `getPassword()` method by returning the user's password:
-  `return `
+  `return user.getPassword();`
 - Override the `getAuthorities()` method by returning a list with an authority
   of "read". We'll elaborate more on this in the next lesson.
 - Have the `isAccountNonExpired()`, `isAccountNonLocked()`,
